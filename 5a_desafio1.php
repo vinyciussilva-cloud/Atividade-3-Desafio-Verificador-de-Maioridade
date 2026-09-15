@@ -1,42 +1,45 @@
-<?php
-$mensagem = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nome = $_POST['nome'];
-    $ano = $_POST['ano_nascimento'];
-    $idade = date('Y') - $ano;
-
-    if ($idade >= 18) {
-        $mensagem = "Acesso permitido, $nome!";
-        file_put_contents('log_acessos.txt', "$nome - $idade anos\n", FILE_APPEND);
-    } else {
-        $mensagem = "Acesso negado, $nome!";
-    }
-}
-
-// Exibe a estrutura da página usando eco do PHP
-echo "
 <!DOCTYPE html>
-<html lang='pt-BR'>
+<html lang="pt-BR">
 <head>
-    <meta charset='UTF-8'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desafio 1</title>
 </head>
 <body>
-    <form method='POST'>
-        Nome: <input type='text' name='nome' required><br><br>
-        Ano de Nascimento: <input type='number' name='ano_nascimento' required><br><br>
-        <button type='submit'>Verificar</button>
+
+    <?php
+    $mensagem = "";
+
+    // Processamento do formulário
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $nome = htmlspecialchars($_POST['nome']); // Proteção básica contra XSS
+        $ano = intval($_POST['ano_nascimento']);
+        $idade = date('Y') - $ano;
+
+        if ($idade >= 18) {
+            $mensagem = "Acesso permitido, $nome!";
+            file_put_contents('log_acessos.txt', "$nome - $idade anos\n", FILE_APPEND);
+        } else {
+            $mensagem = "Acesso negado, $nome!";
+        }
+    }
+    ?>
+
+    <!-- Formulário de Entrada -->
+    <form method="POST">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" required><br><br>
+
+        <label for="ano_nascimento">Ano de Nascimento:</label>
+        <input type="number" id="ano_nascimento" name="ano_nascimento" required><br><br>
+
+        <button type="submit">Verificar</button>
     </form>
-";
 
-// Exibe a mensagem se ela não estiver vazia
-if ($mensagem) {
-    echo "<h3>$mensagem</h3>";
-}
+    <!-- Exibição do Resultado -->
+    <?php if (!empty($mensagem)): ?>
+        <h3><?php echo $mensagem; ?></h3>
+    <?php endif; ?>
 
-echo "
 </body>
 </html>
-";
-?>
